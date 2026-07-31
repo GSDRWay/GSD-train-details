@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>GSD Train Details</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;700&family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     CONFIG — edit these three values before you publish the file
+     ============================================================ */
+  /* (JS config block is further down, search for "USER CONFIG") */
+
+  :root{
+    --paper:#EFE6D0;
+    --paper-dark:#E4D8B8;
+    --ink:#2A2420;
+    --ink-soft:#5C5346;
+    --rail-red:#A6332B;
+    --signal-green:#3F6B4F;
+    --brass:#8A6D3B;
+    --slate:#1F2421;
+    --slate-2:#2B322D;
+    --line:#C9BFA0;
+    --danger-bg:#F6DEDC;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--slate);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);position:relative;box-shadow:0 0 40px rgba(0,0,0,0.4);}
+
+  /* ---- top chrome ---- */
+  .topbar{
+    background:var(--slate);
+    color:var(--paper);
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    position:sticky; top:0; z-index:10;
+    border-bottom:3px solid var(--brass);
+  }
+  .topbar .brand{
+    font-family:'Roboto Slab',serif;
+    font-weight:700;
+    font-size:1.02rem;
+    letter-spacing:0.3px;
+  }
+  .topbar .brand small{display:block;font-family:'Roboto Mono',monospace;font-weight:400;font-size:0.68rem;color:#B9C4B9;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+  .topbar button{
+    background:none;border:1px solid #4A554C;color:var(--paper);
+    font-family:'Roboto Mono',monospace;font-size:0.72rem;
+    padding:7px 10px;border-radius:5px;cursor:pointer;
+  }
+  .topbar button:active{background:#374039;}
+
+  /* ---- generic layout ---- */
+  .view{padding:18px;}
+  .center-view{min-height:calc(100vh - 0px);display:flex;flex-direction:column;justify-content:center;padding:32px 26px;}
+
+  h1{font-family:'Roboto Slab',serif;font-size:1.3rem;margin:0 0 4px;}
+  h2{font-family:'Roboto Slab',serif;font-size:1.05rem;margin:0 0 2px;}
+  p.lead{color:var(--ink-soft);font-size:0.88rem;margin:0 0 22px;line-height:1.4;}
+
+  /* ---- login ---- */
+  .stamp-mark{
+    width:64px;height:64px;border-radius:50%;
+    border:3px solid var(--rail-red);color:var(--rail-red);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Roboto Slab',serif;font-weight:700;font-size:1.4rem;
+    margin:0 auto 18px; transform:rotate(-6deg); opacity:0.9;
+  }
+  input[type=password], input[type=text]{
+    width:100%;padding:13px 14px;font-size:1rem;
+    border:1.5px solid var(--line);border-radius:7px;
+    background:#fff; font-family:'Roboto Mono',monospace;
+    letter-spacing:1px;
+  }
+  input:focus{outline:2px solid var(--brass);outline-offset:1px;}
+  .btn{
+    width:100%;padding:13px;margin-top:12px;
+    background:var(--rail-red);color:#fff;border:none;border-radius:7px;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:0.95rem;
+    cursor:pointer;
+  }
+  .btn:active{background:#8A2A23;}
+  .btn.secondary{background:var(--slate);}
+  .error-banner{
+    background:var(--danger-bg);color:var(--rail-red);border:1px solid var(--rail-red);
+    padding:10px 12px;border-radius:6px;font-size:0.82rem;margin:0 0 14px;line-height:1.4;
+  }
+
+  /* ---- session picker ---- */
+  .session-card{
+    display:block;width:100%;text-align:left;
+    background:#fff;border:1.5px solid var(--line);border-radius:9px;
+    padding:14px 16px;margin-bottom:10px;cursor:pointer;
+  }
+  .session-card:active{background:var(--paper-dark);}
+  .session-card .code{font-family:'Roboto Mono',monospace;font-size:0.72rem;color:var(--brass);font-weight:700;letter-spacing:1px;}
+  .session-card .name{font-family:'Roboto Slab',serif;font-size:1.02rem;margin-top:2px;}
+
+  /* ---- train list (ticket stubs) ---- */
+  .train-stub{
+    position:relative;
+    display:flex;align-items:center;gap:12px;
+    background:#fff;
+    border:1.5px dashed var(--line);
+    border-radius:8px;
+    padding:13px 14px;margin-bottom:11px;cursor:pointer;
+  }
+  .train-stub:active{background:var(--paper-dark);}
+  .train-stub .num{
+    font-family:'Roboto Mono',monospace;font-weight:700;font-size:1.05rem;
+    background:var(--slate);color:var(--paper);
+    padding:8px 10px;border-radius:6px;min-width:52px;text-align:center;
+  }
+  .train-stub .info{flex:1;min-width:0;}
+  .train-stub .info .name{font-weight:600;font-size:0.95rem;}
+  .train-stub .info .meta{font-size:0.78rem;color:var(--ink-soft);margin-top:2px;}
+  .train-stub .chev{color:var(--brass);font-size:1.2rem;}
+
+  .empty-note{color:var(--ink-soft);font-size:0.88rem;padding:20px 4px;text-align:center;}
+
+  /* ---- detail page ---- */
+  .clearance{
+    background:var(--slate); color:var(--paper);
+    border-radius:10px; padding:16px 18px; margin-bottom:20px;
+    position:relative; overflow:hidden;
+  }
+  .clearance .stamp{
+    position:absolute; right:14px; top:14px;
+    border:2px solid var(--rail-red); color:#E8908A;
+    border-radius:50%; width:52px;height:52px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Roboto Mono',monospace;font-weight:700;font-size:0.7rem;
+    transform:rotate(8deg);
+  }
+  .clearance .train-num{font-family:'Roboto Mono',monospace;font-size:1.7rem;font-weight:700;}
+  .clearance .train-name{font-family:'Roboto Slab',serif;font-size:1rem;margin-top:2px;color:#D9CFAF;}
+  .clearance .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .clearance .tag{font-family:'Roboto Mono',monospace;font-size:0.68rem;border:1px solid #4A554C;padding:3px 8px;border-radius:12px;color:#B9C4B9;}
+
+  .stop{
+    position:relative;padding:0 0 22px 26px;border-left:2px solid var(--line);
+  }
+  .stop:last-child{border-left:2px solid transparent;padding-bottom:4px;}
+  .stop::before{
+    content:"";position:absolute;left:-7px;top:2px;
+    width:12px;height:12px;border-radius:50%;
+    background:var(--paper);border:2px solid var(--rail-red);
+  }
+  .stop.shunt::before{background:var(--rail-red);}
+  .stop-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .stop-town{font-family:'Roboto Slab',serif;font-size:1.05rem;font-weight:700;}
+  .stop-times{font-family:'Roboto Mono',monospace;font-size:0.78rem;color:var(--ink-soft);white-space:nowrap;}
+  .stop-instr{font-size:0.86rem;color:var(--ink-soft);margin-top:3px;line-height:1.4;}
+  .shunt-badge{
+    display:inline-block;font-family:'Roboto Mono',monospace;font-size:0.65rem;
+    background:var(--rail-red);color:#fff;padding:2px 7px;border-radius:4px;
+    margin-top:6px;letter-spacing:0.5px;
+  }
+  .move-list{margin-top:8px;display:flex;flex-direction:column;gap:5px;}
+  .move-item{
+    font-size:0.8rem; background:var(--paper-dark); border-radius:6px;
+    padding:6px 9px; display:flex; gap:7px; align-items:baseline;
+  }
+  .move-item .badge{
+    font-family:'Roboto Mono',monospace;font-weight:700;font-size:0.66rem;
+    padding:2px 6px;border-radius:4px;color:#fff;flex-shrink:0;
+  }
+  .move-item.pickup .badge{background:var(--signal-green);}
+  .move-item.setout .badge{background:var(--brass);}
+
+  .section-label{
+    font-family:'Roboto Mono',monospace;font-size:0.7rem;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--brass);margin:22px 0 10px;
+  }
+  .loading{padding:40px 10px;text-align:center;color:var(--ink-soft);font-size:0.88rem;}
+  .back-link{
+    display:inline-flex;align-items:center;gap:5px;
+    color:var(--paper); background:none;border:none;
+    font-family:'Roboto Mono',monospace;font-size:0.78rem;
+    cursor:pointer;padding:0;margin-bottom:10px;opacity:0.85;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* =====================================================================
+   USER CONFIG — fill these in before you publish this file anywhere
+   ===================================================================== */
+const CONFIG = {
+  // Personal Access Token from airtable.com/create/tokens
+  // Scope it to ONLY this base, with read-only "data.records:read" —
+  // never use a token with write access here, this file is public.
+  AIRTABLE_TOKEN: "pat0sKDs0G4h7auxf.59e5b06997d6c4804247a9872eacdf76b0985427f89066f9c6e1c41b03996185",
+
+  BASE_ID: "app49M67jxGfWziFD",
+
+  // Shared passcode friends enter once. Not real security — just keeps
+  // the page off search engines / casual stumbling. Change this.
+  PASSCODE: "WIRREGA26"
+};
+
+/* =====================================================================
+   Airtable table + field names (from the live base schema)
+   ===================================================================== */
+const T = {
+  SESSIONS: "Sessions",
+  SESSION_TRAIN_LIST: "Session Train List",
+  TRAINS: "Trains",
+  TRAIN_STOPS: "Train Stops",
+  CAR_MOVEMENTS: "Session Car Movements"
+};
+
+/* =====================================================================
+   Airtable fetch helper (paginated)
+   ===================================================================== */
+async function airtableList(table, {filterByFormula, sort} = {}) {
+  let records = [];
+  let offset = null;
+  do {
+    const url = new URL(`https://api.airtable.com/v0/${CONFIG.BASE_ID}/${encodeURIComponent(table)}`);
+    if (filterByFormula) url.searchParams.set("filterByFormula", filterByFormula);
+    if (sort) sort.forEach((s, i) => {
+      url.searchParams.set(`sort[${i}][field]`, s.field);
+      url.searchParams.set(`sort[${i}][direction]`, s.direction || "asc");
+    });
+    if (offset) url.searchParams.set("offset", offset);
+
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${CONFIG.AIRTABLE_TOKEN}` } });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Airtable ${res.status} on "${table}": ${body.slice(0,200)}`);
+    }
+    const data = await res.json();
+    records = records.concat(data.records);
+    offset = data.offset || null;
+  } while (offset);
+  return records;
+}
+
+function esc(str){
+  return String(str ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* =====================================================================
+   App state + routing
+   ===================================================================== */
+const app = document.getElementById("app");
+const params = new URLSearchParams(location.search);
+
+function isLoggedIn(){ return localStorage.getItem("gsd_auth") === "1"; }
+
+function route(){
+  if (!isLoggedIn()) return renderLogin();
+  const session = params.get("session");
+  const train = params.get("train");
+  if (session && train) return renderTrainDetail(session, train);
+  if (session) return renderTrainList(session);
+  return renderSessionPicker();
+}
+
+/* ---- Login ---- */
+function renderLogin(){
+  app.innerHTML = `
+    <div class="center-view">
+      <div class="stamp-mark">GSD</div>
+      <h1 style="text-align:center">Great Southern Division</h1>
+      <p class="lead" style="text-align:center">Enter the crew passcode to view train details.</p>
+      <div id="loginError"></div>
+      <input type="password" id="passcodeInput" placeholder="Passcode" autocomplete="off" autocapitalize="off">
+      <button class="btn" id="loginBtn">Enter</button>
+    </div>`;
+  const doLogin = () => {
+    const val = document.getElementById("passcodeInput").value.trim();
+    if (val === CONFIG.PASSCODE) {
+      localStorage.setItem("gsd_auth", "1");
+      route();
+    } else {
+      document.getElementById("loginError").innerHTML =
+        `<div class="error-banner">That passcode isn't right — check with whoever sent you the link.</div>`;
+    }
+  };
+  document.getElementById("loginBtn").onclick = doLogin;
+  document.getElementById("passcodeInput").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+}
+
+/* ---- Topbar (shown on all logged-in views) ---- */
+function topbar(subtitle, showBack, backHref){
+  return `
+    <div class="topbar">
+      <div class="brand">
+        ${showBack ? `<a href="${backHref}" style="color:inherit;text-decoration:none;">&larr; </a>` : ""}GSD Train Details
+        <small>${esc(subtitle || "")}</small>
+      </div>
+      <button id="logoutBtn">Log out</button>
+    </div>`;
+}
+function wireTopbar(){
+  const b = document.getElementById("logoutBtn");
+  if (b) b.onclick = () => { localStorage.removeItem("gsd_auth"); route(); };
+}
+
+/* ---- Session picker (home) ---- */
+async function renderSessionPicker(){
+  app.innerHTML = topbar("Choose a session") + `<div class="view" id="content"><div class="loading">Loading sessions…</div></div>`;
+  wireTopbar();
+  const content = document.getElementById("content");
+  try {
+    const sessions = await airtableList(T.SESSIONS, { sort: [{field:"Sequence"}] });
+    if (!sessions.length) { content.innerHTML = `<div class="empty-note">No sessions found in the base.</div>`; return; }
+    content.innerHTML = `<p class="lead">Pick the session that's running today.</p>` +
+      sessions.map(s => `
+        <a class="session-card" href="?session=${encodeURIComponent(s.fields["Session Code"] || "")}" style="text-decoration:none;color:inherit;display:block;">
+          <div class="code">${esc(s.fields["Session Code"] || "")}</div>
+          <div class="name">${esc(s.fields["Session Name"] || "Untitled session")}</div>
+        </a>`).join("");
+  } catch (err) {
+    content.innerHTML = `<div class="error-banner">Couldn't load sessions.<br>${esc(err.message)}</div>`;
+  }
+}
+
+/* ---- Train list for a session ---- */
+async function renderTrainList(sessionCode){
+  app.innerHTML = topbar(sessionCode, true, "?") + `<div class="view" id="content"><div class="loading">Loading trains…</div></div>`;
+  wireTopbar();
+  const content = document.getElementById("content");
+  try {
+    const [stl, trains] = await Promise.all([
+      airtableList(T.SESSION_TRAIN_LIST, { filterByFormula: `{Session Code}="${sessionCode.replace(/"/g,'\\"')}"` }),
+      airtableList(T.TRAINS)
+    ]);
+    const trainMap = {};
+    trains.forEach(t => { trainMap[t.fields["TrainID"]] = t.fields; });
+
+    if (!stl.length) { content.innerHTML = `<div class="empty-note">No trains listed for this session yet.</div>`; return; }
+
+    // sort by train number for a stable, predictable order
+    stl.sort((a,b) => (a.fields["Train Number"]||"").localeCompare(b.fields["Train Number"]||"", undefined, {numeric:true}));
+
+    content.innerHTML = `<p class="lead">Tap your train for full station-by-station details.</p>` +
+      stl.map(row => {
+        const num = row.fields["Train Number"] || "?";
+        const t = trainMap[num] || {};
+        const name = Array.isArray(t["Train Name"]) ? t["Train Name"].join(" / ") : (t["Train Name"] || "");
+        const meta = [t["Train Type"], t["Operator"], t["Direction"]].filter(Boolean).join(" · ");
+        return `
+          <a class="train-stub" href="?session=${encodeURIComponent(sessionCode)}&train=${encodeURIComponent(num)}" style="text-decoration:none;color:inherit;">
+            <div class="num">${esc(num)}</div>
+            <div class="info">
+              <div class="name">${esc(name || "Train " + num)}</div>
+              <div class="meta">${esc(meta || "\u2014")}</div>
+            </div>
+            <div class="chev">&rsaquo;</div>
+          </a>`;
+      }).join("");
+  } catch (err) {
+    content.innerHTML = `<div class="error-banner">Couldn't load the train list.<br>${esc(err.message)}</div>`;
+  }
+}
+
+/* ---- Train detail (this is the page an NFC tap should land on) ---- */
+async function renderTrainDetail(sessionCode, trainId){
+  app.innerHTML = topbar(sessionCode, true, `?session=${encodeURIComponent(sessionCode)}`) +
+    `<div class="view" id="content"><div class="loading">Loading train ${esc(trainId)}…</div></div>`;
+  wireTopbar();
+  const content = document.getElementById("content");
+  try {
+    const safeId = trainId.replace(/"/g,'\\"');
+    const [trains, stops, movements] = await Promise.all([
+      airtableList(T.TRAINS, { filterByFormula: `{TrainID}="${safeId}"` }),
+      airtableList(T.TRAIN_STOPS, {
+        filterByFormula: `SEARCH("${safeId}", ARRAYJOIN({TrainID}))`,
+        sort: [{field:"Stop Sequence"}]
+      }),
+      airtableList(T.CAR_MOVEMENTS, {
+        filterByFormula: `AND({Session Code}="${sessionCode.replace(/"/g,'\\"')}", OR({Pickup Train}="${safeId}", {Setout Train}="${safeId}"))`
+      })
+    ]);
+
+    const train = (trains[0] && trains[0].fields) || {};
+    const name = Array.isArray(train["Train Name"]) ? train["Train Name"].join(" / ") : (train["Train Name"] || "");
+    const tags = [train["Train Type"], train["Operator"], train["Direction"]].filter(Boolean);
+
+    const header = `
+      <div class="clearance">
+        <div class="stamp">CLEAR</div>
+        <div class="train-num">${esc(trainId)}</div>
+        <div class="train-name">${esc(name || "&mdash;")}</div>
+        <div class="tags">
+          <div class="tag">SESSION ${esc(sessionCode)}</div>
+          ${tags.map(t => `<div class="tag">${esc(t)}</div>`).join("")}
+        </div>
+      </div>`;
+
+    if (!stops.length) {
+      content.innerHTML = header + `<div class="empty-note">No stops recorded for this train.</div>`;
+      return;
+    }
+
+    const stopsHtml = stops.map(s => {
+      const f = s.fields;
+      const town = f["Town Name"] || "\u2014";
+      const isShunt = !!f["Shunt"];
+      const times = [f["Arrive"], f["Depart"]].filter(Boolean).join(" \u2192 ");
+
+      const pickups = movements.filter(m => m.fields["Pickup Train"] === trainId && m.fields["From Town"] === town);
+      const setouts = movements.filter(m => m.fields["Setout Train"] === trainId && m.fields["To Town"] === town);
+
+      const moveHtml = (pickups.length || setouts.length) ? `
+        <div class="move-list">
+          ${pickups.map(m => `<div class="move-item pickup"><span class="badge">PICK UP</span> ${esc(m.fields["Car ID"]||"")} &rarr; ${esc(m.fields["To Town"]||"")}</div>`).join("")}
+          ${setouts.map(m => `<div class="move-item setout"><span class="badge">SET OUT</span> ${esc(m.fields["Car ID"]||"")} (from ${esc(m.fields["From Town"]||"")})</div>`).join("")}
+        </div>` : "";
+
+      return `
+        <div class="stop ${isShunt ? "shunt":""}">
+          <div class="stop-head">
+            <div class="stop-town">${esc(town)}</div>
+            ${times ? `<div class="stop-times">${esc(times)}</div>` : ""}
+          </div>
+          ${f["Instructions"] ? `<div class="stop-instr">${esc(f["Instructions"])}</div>` : ""}
+          ${isShunt ? `<div class="shunt-badge">SHUNT</div>` : ""}
+          ${moveHtml}
+        </div>`;
+    }).join("");
+
+    content.innerHTML = header + `<div class="section-label">Station by station</div>` + stopsHtml;
+  } catch (err) {
+    content.innerHTML = `<div class="error-banner">Couldn't load train ${esc(trainId)}.<br>${esc(err.message)}</div>`;
+  }
+}
+
+/* handle back/forward + initial load */
+window.addEventListener("popstate", route);
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[href^='?']");
+  if (a) {
+    e.preventDefault();
+    history.pushState(null, "", a.getAttribute("href"));
+    // resync params from new URL before routing
+    const newParams = new URLSearchParams(location.search);
+    params.forEach((_, k) => params.delete(k));
+    newParams.forEach((v, k) => params.set(k, v));
+    route();
+  }
+});
+route();
+</script>
+</body>
+</html>
